@@ -1,4 +1,4 @@
-﻿d3.json("/AnalysisContext/Data", function (requests) {
+﻿d3.json("/AnalysisContext/Data/200", function (requests) {
 
     // Various formatters.
     var formatNumber = d3.format(",d"),
@@ -24,8 +24,10 @@
         dates = date.group(d3.time.day),
         hour = requestData.dimension(function(d) { return d.date.getHours() + d.date.getMinutes() / 60; }),
         hours = hour.group(Math.floor),
-        delay = requestData.dimension(function(d) { return d.delay; }),
-        delays = delay.group(function(d) { return Math.floor(d / 100) * 100; });
+        delay = requestData.dimension(function(d) { return Math.min(d.delay, 1000);  }),
+        delays = delay.group(function(d) { return Math.floor(d / 10) * 10; }), 
+        page = requestData.dimension(function(d) { return !!d.UrlAbsolutePath ? '/' + d.UrlAbsolutePath.split('/')[1] : 'n/a';  }),
+        pages = page.group(function(d) { return d; });
 
     var charts = [
 
@@ -34,22 +36,31 @@
           .group(hours)
         .x(d3.scale.linear()
           .domain([0, 24])
-          .rangeRound([0, 10 * 24])),
+          .range([0, 240])),
 
       barChart()
           .dimension(delay)
           .group(delays)
         .x(d3.scale.linear()
-          .domain([-60, 150])
-          .rangeRound([0, 10 * 21])),
+          .domain([0, 1100])
+          .range([0, 1100])),
 
       barChart()
           .dimension(date)
           .group(dates)
           .round(d3.time.day.round)
         .x(d3.time.scale()
-          .domain([new Date(2012, 0, 1), new Date(2013, 7, 1)])
-          .rangeRound([0, 10 * 90]))
+          .domain([new Date(2013, 2, 1), new Date(2013, 6, 1)])
+          .range([0, 1400])),
+
+      barChart()
+          .dimension(page)
+          .group(pages)
+        .x(d3.scale.ordinal()
+          .domain($.map(pages.all(), function(x) { 
+            return x.key; 
+        }))
+          .rangeBands([0, 1400]))
 
       ];
 

@@ -13,8 +13,10 @@ namespace DmLiveViz.Controllers
         // GET: /AnalysisContext/Data
         public JsonNetResult Data(int? count)
         {
-            if (!count.HasValue) count = 50;
-            var d = db.Requests.Take(count.Value).ToArray();
+            if (!count.HasValue) count = 150;
+            var d = db.Requests
+                .Where( r => r.RequestType != "resource")
+                .Take(count.Value).ToArray();
             return new JsonNetResult { Data = d, JsonRequestBehavior = JsonRequestBehavior.AllowGet };
         }
 
